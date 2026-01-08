@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sobat Pancasila</title>
+
+<style>
+:root{
+  --bg:#e0f2f1;
+  --card:#ffffff;
+  --text:#000;
+  --primary:#26a69a;
+}
+
+.logo{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  height:85px;      /* LEBIH GEDE, TAPI AMAN */
+  max-height:90px;  /* BIAR GAK KEGEDEAN */
+}
+.logo.left{
+  left:20px;
+  height:105px;
+  max-height:110px;
+}
+
+.logo.right{
+  right:70px;
+  height:80px;
+}
+
+.copyright{
+  text-align:center;
+  padding:15px;
+  font-size:14px;
+  opacity:0.7;
+}
+body.dark{
+  --bg:#121212;
+  --card:#1e1e1e;
+  --text:#ffffff;
+  --primary:#80cbc4;
+}
+
+body{
+  margin:0;font-family:'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);
+}
+
+header{
+  background:linear-gradient(135deg,#26a69a,#00796b);
+  color:#fff;text-align:center;padding:25px;
+  position:relative;
+}
+
+.toggle{
+  position:absolute;right:15px;top:15px;
+  padding:8px 14px;border:none;border-radius:20px;
+  cursor:pointer;
+}
+
+.container{padding:20px}
+
+.search{
+  width:100%;padding:12px;border-radius:12px;
+  border:none;margin-bottom:15px;
+}
+
+.menu-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:15px
+}
+
+.menu-card{
+  background:var(--card);
+  border-radius:16px;aspect-ratio:1/1;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  text-align:center;cursor:pointer;
+  box-shadow:0 5px 10px rgba(0,0,0,.15);
+  transition:.2s
+}
+.menu-card:hover{transform:scale(1.05)}
+.menu-icon{font-size:32px}
+
+.card{
+  background:var(--card);
+  padding:20px;border-radius:16px;
+}
+
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1}}
+
+.quiz-btn{
+  width:100%;margin-top:10px;padding:14px;
+  border:none;border-radius:12px;
+  background:var(--primary);color:#fff;
+  cursor:pointer;
+}
+
+.quiz-btn.correct{background:#2e7d32}
+.quiz-btn.wrong{background:#c62828}
+
+@keyframes shake{
+  0%{transform:translateX(0)}
+  10%{transform:translateX(-8px)}
+  20%{transform:translateX(8px)}
+  30%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  50%{transform:translateX(-8px)}
+  60%{transform:translateX(8px)}
+  70%{transform:translateX(-8px)}
+  80%{transform:translateX(8px)}
+  90%{transform:translateX(-8px)}
+  100%{transform:translateX(0)}
+}
+
+.timer{height:8px;background:#ccc;border-radius:6px;margin-bottom:10px}
+.timer-bar{height:100%;background:#ff5252;width:100%}
+
+.back{
+  margin-top:15px;padding:12px;
+  background:var(--primary);
+  color:#fff;border:none;border-radius:12px;
+  cursor:pointer;
+}
+
+.popup{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center
+}
+.popup-box{
+  background:var(--card);
+  padding:25px;border-radius:18px;
+  text-align:center
+}
+</style>
+</head>
+
+<body>
+<header>
+  <!-- LOGO KIRI -->
+  <img src="pancasila.png" class="logo left">
+
+  <h1>Sobat Pancasila</h1>
+  <p>Mengenal Lebih Dekat Pancasila & Mengimplementasikan Nilai Pancasila</p>
+
+  <!-- LOGO KANAN -->
+  <img src="unpas.png" class="logo right">
+
+  <button class="toggle" onclick="toggleMode()">🌓</button>
+</header>
+<div class="container" id="app"></div>
+<footer class="copyright">
+  © Muhammad Teguh Herlambang – Pendidikan Matematika UNPAS
+</footer>
+
+<audio id="klik" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+<audio id="salah" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"></audio>
+<audio id="benar" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3"></audio>
+<script>
+const app=document.getElementById("app");
+const klik=document.getElementById("klik");
+const benar=document.getElementById("benar");
+const salah=document.getElementById("salah");
+
+if(localStorage.getItem("mode")==="dark")document.body.classList.add("dark");
+
+function toggleMode(){
+ document.body.classList.toggle("dark");
+ localStorage.setItem("mode",document.body.classList.contains("dark")?"dark":"light");
+}
+
+/* ===== HOME ===== */
+function home(){
+ app.innerHTML=`
+ <input class="search" placeholder="🔍 Cari materi..." oninput="cari(this.value)">
+ <div class="menu-grid" id="menu">
+  <div class="menu-card" onclick="materi(1)"><div class="menu-icon">📘</div>Dasar Negara</div>
+  <div class="menu-card" onclick="materi(2)"><div class="menu-icon">⭐</div>Nilai Pancasila</div>
+  <div class="menu-card" onclick="materi(3)"><div class="menu-icon">🇮🇩</div>Kewarganegaraan</div>
+  <div class="menu-card" onclick="materi(4)"><div class="menu-icon">⚖️</div>HAM</div>
+  <div class="menu-card" onclick="materi(5)"><div class="menu-icon">🗳️</div>Demokrasi</div>
+  <div class="menu-card" onclick="materi(6)"><div class="menu-icon">🌐</div>Era Digital</div>
+  <div class="menu-card" onclick="pilihMode()"><div class="menu-icon">📝</div>Kuis</div>
+  <div class="menu-card" onclick="leaderboard()"><div class="menu-icon">🏆</div>Leaderboard</div>
+  
+ </div>`;
+}
+home();
+
+/* ===== SEARCH ===== */
+function cari(k){
+ const menu=document.getElementById("menu");
+ if(!k){home();return}
+ let h="";
+ Object.keys(materiData).forEach(i=>{
+  if(materiData[i].toLowerCase().includes(k.toLowerCase()))
+   h+=`<div class="menu-card" onclick="materi(${i})"><div class="menu-icon">📖</div>Materi ${i}</div>`;
+ });
+ menu.innerHTML=h||"<p>Tidak ditemukan</p>";
+}
+
+/* ===== MATERI (ASLI, TIDAK DIUBAH) ===== */
+const materiData={1:`<h2>Pancasila sebagai Dasar Negara dan Ideologi Bangsa</h2>
+
+<h3>a. Pancasila sebagai Dasar Negara</h3>
+<p>Pancasila disebut sebagai dasar negara karena menjadi landasan dalam penyelenggaraan negara Indonesia.</p>
+
+<b>Makna Pancasila sebagai dasar negara:</b>
+<ul>
+<li>Sumber dari segala sumber hukum di Indonesia</li>
+<li>Pedoman dalam pembuatan UUD, undang-undang, dan kebijakan negara</li>
+<li>Landasan dalam kehidupan berbangsa dan bernegara</li>
+</ul>
+
+<b>Kedudukan Pancasila:</b>
+<ul>
+<li>Tercantum dalam Pembukaan UUD 1945 alinea keempat</li>
+<li>Mengikat seluruh warga negara dan penyelenggara negara</li>
+</ul>
+
+<h3>b. Pancasila sebagai Ideologi Bangsa</h3>
+<p>Pancasila sebagai ideologi berarti menjadi cita-cita, nilai, dan pandangan hidup bangsa Indonesia.</p>
+
+<b>Ciri ideologi Pancasila:</b>
+<ul>
+<li>Bersifat terbuka</li>
+<li>Dinamis dan aktual</li>
+<li>Berakar pada budaya bangsa Indonesia</li>
+</ul>`,
+
+  2:`<h2>Nilai-Nilai Pancasila dalam Kehidupan Berbangsa dan Bernegara</h2>
+
+<b>Nilai pada Setiap Sila:</b>
+<ol>
+<li><b>Ketuhanan Yang Maha Esa</b>
+<ul><li>Toleransi antar umat beragama</li><li>Kebebasan beribadah</li></ul></li>
+
+<li><b>Kemanusiaan yang Adil dan Beradab</b>
+<ul><li>Menghargai HAM</li><li>Bersikap adil dan berperikemanusiaan</li></ul></li>
+
+<li><b>Persatuan Indonesia</b>
+<ul><li>Menjaga keutuhan NKRI</li><li>Menghargai keberagaman</li></ul></li>
+
+<li><b>Kerakyatan yang Dipimpin oleh Hikmat Kebijaksanaan</b>
+<ul><li>Musyawarah mufakat</li><li>Demokrasi beretika</li></ul></li>
+
+<li><b>Keadilan Sosial bagi Seluruh Rakyat Indonesia</b>
+<ul><li>Pemerataan kesejahteraan</li><li>Kepedulian sosial</li></ul></li>
+</ol>`,
+
+  3:`<h2>Pancasila dan Kewarganegaraan</h2>
+<p>Pancasila menjadi pedoman perilaku warga negara dalam menjalankan hak dan kewajiban.</p>
+
+<b>Hak Warga Negara:</b>
+<ul>
+<li>Hak memperoleh pendidikan</li>
+<li>Hak menyampaikan pendapat</li>
+<li>Hak beragama dan beribadah</li>
+</ul>
+
+<b>Kewajiban Warga Negara:</b>
+<ul>
+<li>Menaati hukum</li>
+<li>Menghormati hak orang lain</li>
+<li>Menjaga persatuan dan kesatuan</li>
+</ul>
+
+<p>Pancasila menyeimbangkan hak dan kewajiban.</p>`,
+
+  4:`<h2>Pancasila, HAM, dan Keadilan Sosial</h2>
+
+<h3>Pancasila dan HAM</h3>
+<p>Pancasila menjunjung HAM dengan landasan moral dan kebersamaan.</p>
+
+<ul>
+<li>Kebebasan berpendapat dengan tanggung jawab</li>
+<li>Hak hidup, beragama, dan memperoleh keadilan</li>
+</ul>
+
+<h3>Keadilan Sosial</h3>
+<ul>
+<li>Kesempatan yang sama</li>
+<li>Penghapusan kesenjangan</li>
+<li>Perlindungan kelompok lemah</li>
+</ul>`,
+
+  5:`<h2>Pancasila dalam Kehidupan Demokrasi</h2>
+<p>Demokrasi Indonesia adalah demokrasi Pancasila.</p>
+
+<ul>
+<li>Berdasarkan Ketuhanan dan kemanusiaan</li>
+<li>Mengutamakan musyawarah mufakat</li>
+<li>Menjunjung persatuan dan keadilan</li>
+</ul>
+
+<b>Contoh penerapan:</b>
+<ul>
+<li>Pemilu jujur dan adil</li>
+<li>Penyampaian pendapat secara damai</li>
+<li>Keputusan melalui musyawarah</li>
+</ul>`,
+
+  6: `<h2>Tantangan Aktualisasi Pancasila di Era Global dan Digital</h2>
+
+<b>Tantangan:</b>
+<ul>
+<li>Globalisasi budaya</li>
+<li>Radikalisme dan intoleransi</li>
+<li>Hoaks dan disinformasi</li>
+<li>Individualisme</li>
+<li>Ketimpangan sosial ekonomi</li>
+</ul>
+
+<b>Upaya Mengatasi:</b>
+<ul>
+<li>Pendidikan Pancasila sejak dini</li>
+<li>Literasi digital</li>
+<li>Penguatan karakter</li>
+<li>Keteladanan pemimpin</li>
+</ul>`
+};
+function materi(n){
+ klik.play();
+ app.innerHTML=`<div class="card">${materiData[n]}
+ <button class="back" onclick="home()">⬅ Kembali</button></div>`;
+}
+
+/* ===== QUIZ ===== */
+const soal=[["Pancasila dasar negara berarti","A simbol","B sumber hukum","C kekuasaan","B"],
+            ["Ideologi terbuka berarti …","A. bebas","B. adaptif","C. kaku","B"],
+["Toleransi beragama mencerminkan …","A. sila 1","B. sila 2","C. sila 3","A"],
+["Gotong royong mencerminkan …","A. egoisme","B. kebersamaan","C. liberalisme","B"],
+["Hak warga negara berkaitan dengan …","A. ideologi","B. kewarganegaraan","C. budaya","B"],
+["Partisipasi politik mencerminkan …","A. apatis","B. tanggung jawab","C. paksaan","B"],
+["Anti diskriminasi bagian dari …","A. HAM","B. globalisasi","C. budaya","A"],
+["HAM bersifat universal artinya …","A. lokal","B. umum","C. terbatas","B"],
+["Demokrasi Pancasila menekankan …","A. voting","B. musyawarah","C. mayoritas","B"],
+["Musyawarah bertujuan …","A. menang","B. mufakat","C. kuasa","B"],
+["Hoaks tantangan era …","A. kolonial","B. digital","C. agraris","B"],
+["Etika medsos mencerminkan …","A. kemanusiaan","B. egoisme","C. liberalisme","A"],
+["Pancasila pemersatu karena …","A. satu budaya","B. nilai bersama","C. kekuasaan","B"],
+["Keadilan sosial berarti …","A. sama rata","B. proporsional","C. bebas","B"],
+["Hak berpendapat harus disertai …","A. tanggung jawab","B. bebas mutlak","C. paksaan","A"],
+["Radikalisme bertentangan dengan …","A. persatuan","B. teknologi","C. budaya","A"],
+["Warga negara baik adalah …","A. pasif","B. taat hukum","C. netral","B"],
+["Demokrasi tanpa etika menimbulkan …","A. stabil","B. konflik","C. damai","B"],
+["Budaya asing disikapi dengan …","A. tolak","B. selektif","C. terima semua","B"],
+["Pancasila relevan karena …","A. kaku","B. terbuka","C. tertutup","B"]
+];
+let i=0,skor=0,timer,mode="ujian";
+let jawabanUser = [];
+let hasilTerakhir = null;
+function pilihMode(){
+ app.innerHTML = `
+ <div class="card">
+  <h2>Pilih Mode</h2>
+  <button class="quiz-btn" id="latihanBtn">🧠 Latihan</button>
+  <button class="quiz-btn" id="ujianBtn">📝 Ujian</button>
+  <button class="back" id="kembaliBtn">⬅ Kembali</button>
+ </div>
+ `;
+
+ document.getElementById("latihanBtn").addEventListener("click", ()=>start("latihan"));
+ document.getElementById("ujianBtn").addEventListener("click", ()=>start("ujian"));
+ document.getElementById("kembaliBtn").addEventListener("click", home);
+}
+
+function start(m){
+ clearInterval(timer);   // ⬅️ INI KUNCINYA
+ timer = null;
+ mode = m;
+ i = 0;
+ skor = 0;
+ jawabanUser = [];
+ tampil();
+}
+window.mulaiQuiz = start;
+
+
+function tampil(){
+ if(!soal[i]){ 
+  selesai(); 
+  return;
+ }
+
+ let t = mode==="ujian"
+  ? `<div class="timer"><div class="timer-bar" id="bar"></div></div>`
+  : "";
+
+ app.innerHTML = `
+ <div class="card">
+  ${t}
+  <b>${soal[i][0]}</b>
+  ${["A","B","C"].map((x,j)=>`
+    <button class="quiz-btn" onclick="jawab('${x}')">
+      ${soal[i][j+1]}
+    </button>`).join("")}
+ </div>
+ `;
+
+ if(mode==="ujian") startTimer();
+}
+
+function startTimer(){
+ let s=5;
+ timer=setInterval(()=>{
+  s--;document.getElementById("bar").style.width=s/5*100+"%";
+  if(s<=0){clearInterval(timer);
+  jawabanUser.push({
+    soal : soal[i][0],
+    jawabanUser : "-",
+    jawabanBenar: soal[i][4]
+  });  
+    next();}
+ },1000);
+}
+
+function jawab(j){
+ clearInterval(timer);
+
+ jawabanUser.push({
+  soal : soal[i][0],
+  jawabanUser: j,
+  jawabanBenar: soal[i][4]
+ });
+
+ if(j === soal[i][4]){
+  skor += 5;
+  benar.play();
+ }else{
+  salah.play();
+ }
+
+ next();
+}
+
+
+
+function next(){
+ i++;
+ if(i < soal.length){
+  tampil();
+ }else {
+  selesai();
+ }
+}
+
+function selesai(){
+ clearInterval(timer);
+ timer = null;
+
+ let benarCount = jawabanUser.filter(
+   x => x.jawabanUser === x.jawabanBenar
+ ).length;
+
+ let salahCount = jawabanUser.length - benarCount;
+
+ let data = JSON.parse(localStorage.getItem("nilai") || "[]");
+
+ let hasil = {
+  mode,
+  skor,
+  benar: benarCount,
+  salah: salahCount,
+  detail: jawabanUser,
+  waktu: new Date().toLocaleString()
+};
+
+data.push(hasil);
+hasilTerakhir = hasil; // ⬅️ PENTING
+
+ localStorage.setItem("nilai", JSON.stringify(data));
+
+ app.innerHTML = `
+ <div class="card">
+  <h2>🎉 Quiz Selesai</h2>
+  <p>Mode: <b>${mode}</b></p>
+  <p>Skor: <b>${skor}</b></p>
+  <p>Benar: ${benarCount} | Salah: ${salahCount}</p>
+  <button class="quiz-btn" onclick="reviewData(hasilTerakhir)">
+  Lihat Review
+</button>
+  <button class="back" onclick="home()">Kembali</button>
+ </div>`;
+}
+/* ===== LEADERBOARD ===== */
+function leaderboard(){
+ let d = JSON.parse(localStorage.getItem("nilai") || "[]")
+   .sort((a,b)=>b.skor-a.skor);
+
+ app.innerHTML = `
+ <div class="card">
+  <h2>🏆 Leaderboard</h2>
+  ${d.map(x=>`
+   <div style="margin-bottom:12px">
+    <b>Skor ${x.skor}</b><br>
+    Mode: ${x.mode}<br>
+    Benar: ${x.benar} | Salah: ${x.salah}<br>
+    <button class="quiz-btn" onclick='reviewData(${JSON.stringify(x)})'>
+      Lihat Review
+    </button>
+   </div>
+  `).join("")}
+  <button class="back" onclick="home()">⬅ Kembali</button>
+ </div>`;
+}
+function reviewData(d){
+ app.innerHTML = `
+ <div class="card">
+  <h2>📋 Review Jawaban</h2>
+  ${d.detail.map((x,n)=>`
+   <div style="margin-bottom:10px">
+    <b>${n+1}. ${x.soal}</b><br>
+    Jawaban kamu:
+    <span style="color:${x.jawabanUser===x.jawabanBenar?'green':'red'}">
+      ${x.jawabanUser}
+    </span><br>
+    Jawaban benar: <b>${x.jawabanBenar}</b>
+   </div>
+  `).join("")}
+  <button class="back" onclick="leaderboard()">⬅ Kembali</button>
+ </div>`;
+}
+
+</script>
+</body>
+</html>
